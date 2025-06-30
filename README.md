@@ -1,6 +1,6 @@
 # Demo Video
 
-https://github.com/user-attachments/assets/4a8ceb9e-4b73-46fd-9797-2e8b4a65779b
+https://github.com/user-attachments/assets/bf032b68-5ee4-4636-b13b-ab1886e1773f
 
 # Infrastructure Monitoring System
 
