@@ -18,66 +18,65 @@ class InfrastructureAnalyzer:
         self.valid_records = 0
         self.invalid_records = 0
         self.critical_metrics_count = 0
-    
+
     def load_data(self, filepath: str) -> List[Metrics]:
         print("\n=== Data Ingestion Node ===")
         print(f"Loading data from {filepath}...")
-        
+
         with open(filepath, 'r') as f:
             raw_data = json.load(f)
-        
+
         print(f"Loaded {len(raw_data)} records from {filepath}")
-        
+
         metrics = []
         start_time = datetime.now()
-        
+
         print("Processing batches...")
         for i, record in enumerate(raw_data):
             try:
                 metric = Metrics(**record)
                 metrics.append(metric)
                 self.valid_records += 1
-                
-                if (metric.cpu_usage > 90 or metric.memory_usage > 90 or 
+
+                if (metric.cpu_usage > 90 or metric.memory_usage > 90 or
                     metric.temperature_celsius > 80 or metric.error_rate > 0.1 or
                     metric.service_status.api_gateway == 'offline' or
                     metric.service_status.database == 'offline' or
-                    metric.service_status.cache == 'offline'):
+                        metric.service_status.cache == 'offline'):
                     self.critical_metrics_count += 1
-                    
+
             except Exception as e:
                 self.invalid_records += 1
                 if self.invalid_records <= 3:
                     print(f"  - Validation error in record {i}: {str(e)[:50]}...")
-        
-        
+
         print("\nProcessing Complete!")
         print(f"  - Total records: {len(raw_data)}")
         print(f"  - Valid records: {self.valid_records}")
         print(f"  - Invalid records: {self.invalid_records}")
         print(f"  - Critical metrics: {self.critical_metrics_count}")
-        
+
         if metrics:
             timestamps = [m.timestamp for m in metrics]
             start_time = min(timestamps)
             end_time = max(timestamps)
             duration = end_time - start_time
-            
+
             print("\nTime Range:")
             print(f"  - Start: {start_time}")
             print(f"  - End: {end_time}")
             print(f"  - Duration: {duration}")
-        
+
         return metrics
-    
+
     def detect_anomalies(self, metrics: List[Metrics]) -> Dict[str, Any]:
         print("\n=== Anomaly Detection Node ===")
-        
+
         anomalies = []
         service_issues = defaultdict(int)
         severity_count = defaultdict(int)
         anomaly_types = defaultdict(int)
-        
+
         for metric in metrics:
             if metric.cpu_usage >= self.thresholds['cpu']['critical']:
                 anomalies.append({
@@ -110,7 +109,7 @@ class InfrastructureAnalyzer:
                 })
                 anomaly_types['cpu_high'] += 1
                 severity_count['warning'] += 1
-            
+
             if metric.memory_usage >= self.thresholds['memory']['critical']:
                 anomalies.append({
                     'timestamp': metric.timestamp.isoformat(),
@@ -203,7 +202,7 @@ class InfrastructureAnalyzer:
                     'severity': 'warning',
                     'value': metric.error_rate,
                     'description': f'Error rate high at {metric.error_rate:.2%}'
-                })  
+                })
                 anomaly_types['error_rate_high'] += 1
                 severity_count['warning'] += 1
 
@@ -366,7 +365,7 @@ class InfrastructureAnalyzer:
                 })
                 anomaly_types['resource_exhaustion'] += 1
                 severity_count['critical'] += 1
-            
+
             network_total = metric.network_in_kbps + metric.network_out_kbps
             if network_total > 15000 and metric.latency_ms > 200:
                 anomalies.append({
@@ -378,7 +377,7 @@ class InfrastructureAnalyzer:
                 })
                 anomaly_types['network_saturation'] += 1
                 severity_count['high'] += 1
-            
+
             if metric.temperature_celsius > 75 and metric.cpu_usage > 80:
                 anomalies.append({
                     'timestamp': metric.timestamp.isoformat(),
@@ -389,9 +388,9 @@ class InfrastructureAnalyzer:
                 })
                 anomaly_types['temperature_high'] += 1
                 severity_count['high'] += 1
-        
+
         sorted_metrics = sorted(metrics, key=lambda m: m.timestamp)
-        
+
         window_size = 10
         for i in range(len(sorted_metrics) - window_size + 1):
             window = sorted_metrics[i:i + window_size]
@@ -406,9 +405,9 @@ class InfrastructureAnalyzer:
                 })
                 anomaly_types['cpu_trend'] += 1
                 severity_count['medium'] += 1
-                
+
                 error_rates = [m.error_rate for m in window]
-                if all(error_rates[i] <= error_rates[i+1] for i in range(len(error_rates)-1)) and error_rates[-1] > 0.05:
+                if all(error_rates[i] <= error_rates[i + 1] for i in range(len(error_rates) - 1)) and error_rates[-1] > 0.05:
                     anomalies.append({
                         'timestamp': window[-1].timestamp.isoformat(),
                         'type': 'error_rate_high',
@@ -418,21 +417,21 @@ class InfrastructureAnalyzer:
                     })
                     anomaly_types['error_rate_high'] += 1
                     severity_count['medium'] += 1
-        
+
         print("\nAnalysis Complete!")
         print(f"  - Metrics analyzed: {len(metrics)}")
         print(f"  - Anomalies detected: {len(anomalies)}")
-        
+
         print("\nSeverity Distribution:")
         for severity in ['critical', 'high', 'medium', 'low']:
             if severity_count.get(severity, 0) > 0:
                 print(f"  - {severity.capitalize()}: {severity_count[severity]}")
-        
+
         print("\nTop Anomaly Types:")
         sorted_types = sorted(anomaly_types.items(), key=lambda x: x[1], reverse=True)[:5]
         for atype, count in sorted_types:
             print(f"  - {atype}: {count}")
-        
+
         if anomalies:
             print("\nSample Anomalies:")
             print("-" * 100)
@@ -440,7 +439,7 @@ class InfrastructureAnalyzer:
             print("-" * 100)
             for anomaly in anomalies[:5]:
                 print(f"{anomaly['timestamp']:<28} {anomaly['type']:<18} {anomaly['severity'].upper():<10} {anomaly['description']}")
-        
+
         return {
             'total_metrics': len(metrics),
             'total_anomalies': len(anomalies),
@@ -451,40 +450,41 @@ class InfrastructureAnalyzer:
             'sample_anomalies': anomalies[:10]
         }
 
+
 if __name__ == "__main__":
     import sys
     import os
-    
+
     if len(sys.argv) != 2:
         print("Usage: python analyzer.py <input_file.json>")
         sys.exit(1)
-    
+
     input_file = sys.argv[1]
-    
+
     if not os.path.exists(input_file):
         print(f"Error: File {input_file} not found")
         sys.exit(1)
-    
+
     print(f"\nAnalyzing infrastructure metrics from {input_file}...")
-    
+
     analyzer = InfrastructureAnalyzer()
     metrics = analyzer.load_data(input_file)
     analysis = analyzer.detect_anomalies(metrics)
-    
+
     print(f"\nAnalysis Summary:")
     print(f"  - Total metrics analyzed: {analysis['total_metrics']}")
     print(f"  - Total anomalies detected: {analysis['total_anomalies']}")
     print(f"  - Critical severity count: {analysis['critical_count']}")
-    
+
     print("\nSeverity Distribution:")
     for severity, count in analysis['severity_distribution'].items():
         print(f"  - {severity.capitalize()}: {count}")
-    
+
     print("\nAnomaly Type Distribution:")
     sorted_types = sorted(analysis['anomaly_breakdown'].items(), key=lambda x: x[1], reverse=True)
     for atype, count in sorted_types[:5]:
         print(f"  - {atype}: {count}")
-    
+
     if analysis['service_issues']:
         print("\nService Issues:")
         for service, count in analysis['service_issues'].items():

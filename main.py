@@ -12,14 +12,14 @@ load_dotenv()
 
 def generate_recommendations(analysis_data):
     client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
-    
+
     anomaly_summary = {
         "total_anomalies": analysis_data['total_anomalies'],
         "critical_severity": analysis_data['critical_count'],
         "type_distribution": analysis_data['anomaly_breakdown'],
         "total_metrics_analyzed": analysis_data['total_metrics']
     }
-    
+
     critical_metrics = []
     for anomaly in analysis_data['sample_anomalies'][:5]:
         critical_metrics.append({
@@ -27,9 +27,9 @@ def generate_recommendations(analysis_data):
             "value": anomaly['value'],
             "description": anomaly['description']
         })
-    
+
     service_impact = analysis_data['service_issues']
-    
+
     template = """You are an expert infrastructure engineer analyzing system anomalies and providing actionable recommendations.
 
 Analyze the following infrastructure issues and provide specific, prioritized recommendations.
@@ -89,7 +89,7 @@ IMPORTANT: Return your response as a valid JSON object with this exact structure
         "trending_concerns": ["list of trending issues"]
     }}
 }}"""
-    
+
     prompt = template.format(
         anomaly_summary=json.dumps(anomaly_summary, indent=2),
         critical_metrics=json.dumps(critical_metrics, indent=2),
@@ -104,7 +104,7 @@ IMPORTANT: Return your response as a valid JSON object with this exact structure
         temperature=0.0,
         response_format={"type": "json_object"}
     )
-    
+
     return json.loads(response.choices[0].message.content)
 
 
@@ -112,23 +112,23 @@ def main():
     if len(sys.argv) != 2:
         print("Usage: python main.py <input_file.json>")
         sys.exit(1)
-    
+
     input_file = sys.argv[1]
-    
+
     if not os.path.exists(input_file):
         print(f"Error: File {input_file} not found")
         sys.exit(1)
-    
+
     if not os.getenv('OPENAI_API_KEY'):
         print("Error: OPENAI_API_KEY environment variable not set")
         sys.exit(1)
-    
+
     print(f"\nAnalyzing infrastructure metrics from {input_file}...")
-    
+
     analyzer = InfrastructureAnalyzer()
     metrics = analyzer.load_data(input_file)
     analysis = analyzer.detect_anomalies(metrics)
-    
+
     print("\n=== Recommendation Generation Node ===")
     print("Generating recommendations...")
     print(f"Anomaly Analysis:")
@@ -136,11 +136,11 @@ def main():
     print(f"  - Critical severity: {analysis['critical_count']}")
     try:
         recommendations = generate_recommendations(analysis)
-        
+
         output_file = f"recommendations_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
         with open(output_file, 'w') as f:
             json.dump(recommendations, f, indent=2)
-        
+
         print(f"\nRecommendations saved to {output_file}")
         print(f"\nSummary:")
         print(f"- Severity: {recommendations['severity']}")
@@ -148,7 +148,7 @@ def main():
         print(f"\nTop 3 actions:")
         for i, rec in enumerate(recommendations['recommendations'][:3], 1):
             print(f"{i}. {rec['action']}")
-            
+
     except Exception as e:
         print(f"Error generating recommendations: {e}")
         sys.exit(1)
