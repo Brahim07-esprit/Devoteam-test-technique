@@ -1,5 +1,4 @@
-[Watch the demo](demo.mp4)
-
+https://github.com/user-attachments/assets/4a8ceb9e-4b73-46fd-9797-2e8b4a65779b
 
 # Infrastructure Monitoring System
 
