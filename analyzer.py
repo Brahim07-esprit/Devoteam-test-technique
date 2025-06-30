@@ -450,3 +450,42 @@ class InfrastructureAnalyzer:
             'severity_distribution': dict(severity_count),
             'sample_anomalies': anomalies[:10]
         }
+
+if __name__ == "__main__":
+    import sys
+    import os
+    
+    if len(sys.argv) != 2:
+        print("Usage: python analyzer.py <input_file.json>")
+        sys.exit(1)
+    
+    input_file = sys.argv[1]
+    
+    if not os.path.exists(input_file):
+        print(f"Error: File {input_file} not found")
+        sys.exit(1)
+    
+    print(f"\nAnalyzing infrastructure metrics from {input_file}...")
+    
+    analyzer = InfrastructureAnalyzer()
+    metrics = analyzer.load_data(input_file)
+    analysis = analyzer.detect_anomalies(metrics)
+    
+    print(f"\nAnalysis Summary:")
+    print(f"  - Total metrics analyzed: {analysis['total_metrics']}")
+    print(f"  - Total anomalies detected: {analysis['total_anomalies']}")
+    print(f"  - Critical severity count: {analysis['critical_count']}")
+    
+    print("\nSeverity Distribution:")
+    for severity, count in analysis['severity_distribution'].items():
+        print(f"  - {severity.capitalize()}: {count}")
+    
+    print("\nAnomaly Type Distribution:")
+    sorted_types = sorted(analysis['anomaly_breakdown'].items(), key=lambda x: x[1], reverse=True)
+    for atype, count in sorted_types[:5]:
+        print(f"  - {atype}: {count}")
+    
+    if analysis['service_issues']:
+        print("\nService Issues:")
+        for service, count in analysis['service_issues'].items():
+            print(f"  - {service}: {count} issues")
