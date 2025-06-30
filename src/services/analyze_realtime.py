@@ -1,5 +1,5 @@
-from main import generate_recommendations
-from analyzer import InfrastructureAnalyzer
+from scripts.main import generate_recommendations
+from src.core.analyzer import InfrastructureAnalyzer
 import os
 import sys
 from datetime import datetime
@@ -9,7 +9,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 
 def analyze_realtime_data():
-    metrics_file = "realtime_metrics.json"
+    metrics_file = "data/outputs/realtime_metrics.json"
 
     if not os.path.exists(metrics_file):
         print(f"Error: {metrics_file} not found!")

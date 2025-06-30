@@ -1,5 +1,5 @@
-import main
-from analyzer import InfrastructureAnalyzer
+import scripts.main as main
+from src.core.analyzer import InfrastructureAnalyzer
 from langchain_core.messages import HumanMessage, AIMessage
 from langgraph.graph import StateGraph, END, MessagesState, START
 from openai import OpenAI
@@ -27,7 +27,7 @@ os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
 
 
 @tool
-def run_analyzer(input_file: str = "realtime_metrics.json") -> str:
+def run_analyzer(input_file: str = "data/outputs/realtime_metrics.json") -> str:
     """
     Run the infrastructure analyzer on the specified input file.
 
@@ -67,7 +67,7 @@ def run_analyzer(input_file: str = "realtime_metrics.json") -> str:
 
 
 @tool
-def run_full_pipeline(input_file: str = "realtime_metrics.json") -> str:
+def run_full_pipeline(input_file: str = "data/outputs/realtime_metrics.json") -> str:
     """
     Run the full infrastructure analysis pipeline including recommendations.
 
@@ -91,7 +91,7 @@ def run_full_pipeline(input_file: str = "realtime_metrics.json") -> str:
 
 
 @tool
-def generate_metric_graph(metric_name: str, input_file: str = "realtime_metrics.json") -> str:
+def generate_metric_graph(metric_name: str, input_file: str = "data/outputs/realtime_metrics.json") -> str:
     """
     Generate a graph for the specified metric from the infrastructure data.
 
@@ -154,7 +154,7 @@ def generate_metric_graph(metric_name: str, input_file: str = "realtime_metrics.
 
 
 @tool
-def list_available_metrics(input_file: str = "realtime_metrics.json") -> str:
+def list_available_metrics(input_file: str = "data/outputs/realtime_metrics.json") -> str:
     """
     List all available metrics in the data file.
 
@@ -189,7 +189,7 @@ def list_available_metrics(input_file: str = "realtime_metrics.json") -> str:
 
 
 @tool
-def clear_metrics(input_file: str = "realtime_metrics.json") -> str:
+def clear_metrics(input_file: str = "data/outputs/realtime_metrics.json") -> str:
     """
     Clear the metrics file by replacing it with an empty array.
     Use this to reset the metrics collection.
@@ -209,30 +209,30 @@ def clear_metrics(input_file: str = "realtime_metrics.json") -> str:
 def run_realtime_analyzer() -> str:
     """
     Run the realtime analyzer to collect current system metrics.
-    This will start monitoring the system in real-time and save metrics to realtime_metrics.json.
+    This will start monitoring the system in real-time and save metrics to data/outputs/realtime_metrics.json.
     """
     try:
-
-        script_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'realtime_analysis', 'realtime_analyzer.py')
+        # Get the absolute path to the realtime_analyzer.py file
+        output_file = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), 'data', 'outputs', 'realtime_metrics.json')
 
         try:
-            subprocess.run(['pkill', '-9', '-f', 'realtime_analysis/realtime_analyzer.py'], stderr=subprocess.DEVNULL)
+            subprocess.run(['pkill', '-9', '-f', 'src/services/realtime_analyzer.py'], stderr=subprocess.DEVNULL)
             print("Killed any existing monitoring processes")
             time.sleep(1)
         except BaseException:
             pass
 
-        output_file = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'realtime_metrics.json')
         with open(output_file, 'w') as f:
             json.dump([], f)
         print(f"Created empty file before starting analyzer: {output_file}")
 
+        script_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), 'src', 'services', 'realtime_analyzer.py')
         cmd = f"nohup python3 {script_path} > realtime_analyzer.log 2>&1 &"
         subprocess.run(cmd, shell=True, check=True)
 
         time.sleep(2)
 
-        check_cmd = "ps aux | grep -v grep | grep realtime_analysis/realtime_analyzer.py"
+        check_cmd = "ps aux | grep -v grep | grep src/services/realtime_analyzer.py"
         result = subprocess.run(check_cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
         if not result.stdout.strip():

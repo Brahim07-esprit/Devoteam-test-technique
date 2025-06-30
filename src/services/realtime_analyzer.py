@@ -1,4 +1,4 @@
-from models import Metrics, ServiceStatus
+from src.core.models import Metrics, ServiceStatus
 import psutil
 import json
 import time
@@ -15,7 +15,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 
 class SimpleMonitor:
-    def __init__(self, output_file="realtime_metrics.json"):
+    def __init__(self, output_file="data/outputs/realtime_metrics.json"):
         self.output_file = output_file
         self.metrics = deque(maxlen=100)
         self.running = True

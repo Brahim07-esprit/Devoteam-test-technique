@@ -14,6 +14,17 @@ This project provides a modular infrastructure monitoring solution with:
 - AI-powered recommendations via OpenAI integration
 - Interactive agent interface for natural language queries
 
+## Thought process
+
+### 1. Manual Solution
+Started by analyzing infrastructure data and creating Pydantic models (`src/core/models.py`) for data validation. Built manual scripts that run from command line to process metrics files and detect anomalies using statistical methods. Engineered prompts to generate AI recommendations, grouping anomalies to avoid excessive API calls.
+
+### 2. Real-time Analyzer
+Recognized the need for continuous monitoring rather than batch processing. Implemented real-time data collection and analysis to provide immediate insights into system performance.
+
+### 3. Streamlit Interface + Agent
+Considered users without IDE/Python knowledge and created a web interface using Streamlit. Added an interactive agent with LangGraph architecture for natural language interaction, allowing users to query the system conversationally.
+
 ## Quick Start (Docker)
 
 ```bash
@@ -22,7 +33,7 @@ git clone <repository-url>
 cd project_devoteam
 cp env.example .env  # Add your OpenAI API key
 
-# Run with Docker
+# Run with Docker (Dockerfile and docker-compose.yml are at the project root)
 docker compose up
 ```
 
@@ -66,17 +77,21 @@ docker compose run analyze-realtime
 #### Option 2: Using custom commands
 ```bash
 # Analyze a specific metrics file
-docker compose run --rm streamlit python analyzer.py data/rapport.json
+docker compose run --rm streamlit python -m src.core.analyzer data/raw/rapport.json
 
 # Run the main pipeline with recommendations
-docker compose run --rm streamlit python main.py data/rapport.json
+docker compose run --rm streamlit python scripts/main.py data/raw/rapport.json
 
 # Analyze real-time collected data
-docker compose run --rm streamlit python -m realtime_analysis.analyze_realtime
+docker compose run --rm streamlit python -m src.services.analyze_realtime
 
 # Start the real-time metrics collector
-docker compose run --rm streamlit python -m realtime_analysis.realtime_analyzer
+docker compose run --rm streamlit python -m src.services.realtime_analyzer
 ```
+
+> **Note:**
+> - Always run commands from the project root so that `src/` is importable.
+> - If you run scripts directly (not as modules), you may need to set `PYTHONPATH=.` or `PYTHONPATH=./src`.
 
 ## Components
 
@@ -98,12 +113,24 @@ The agent interface supports commands like:
 
 ```
 project_devoteam/
-├── agent/               # LangGraph-based agent system
-├── realtime_analysis/   # Real-time monitoring components
-├── streamlit/           # Dashboard interface
-├── analyzer.py          # Core analysis logic
-├── models.py            # Data models
-└── main.py              # Pipeline orchestration
+├── src/
+│   ├── core/           # Core analysis logic and data models
+│   ├── agents/         # LangGraph-based agent system
+│   ├── services/       # Real-time monitoring components
+│   ├── web/            # Dashboard interface (Streamlit)
+│   └── utils/          # Utility functions
+├── scripts/            # Pipeline orchestration and utility scripts
+├── data/
+│   ├── raw/            # Raw input data
+│   ├── processed/      # Processed data
+│   └── outputs/        # Generated outputs and logs
+├── docker/             # (optional) Additional Docker configs
+├── docker-compose.yml  # At project root
+├── Dockerfile          # At project root
+├── docs/               # Documentation
+├── requirements.txt
+├── .env.example
+└── README.md
 ```
 
 ## Troubleshooting
@@ -112,4 +139,4 @@ project_devoteam/
 
 **OpenAI API Issues**: Check your API key in .env file and restart containers
 
-**Missing Data File**: Create a data directory with `mkdir -p data` before running scripts that require input files 
+**Missing Data File**: Place your metrics file in `data/raw/` before running scripts that require input files

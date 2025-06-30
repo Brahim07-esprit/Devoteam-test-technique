@@ -1,4 +1,4 @@
-from models import Metrics, ServiceStatus
+from src.core.models import Metrics, ServiceStatus
 import streamlit as st
 import os
 import json
@@ -39,14 +39,15 @@ if 'metrics_initialized' not in st.session_state:
 
 
 def initialize_metrics_file():
-    if not st.session_state.metrics_initialized:
-        metrics_file = "realtime_metrics.json"
-
-        with open(metrics_file, 'w') as f:
-            json.dump([], f)
-        print("Created/emptied realtime_metrics.json at startup")
-
-        st.session_state.metrics_initialized = True
+    metrics_file = "data/outputs/realtime_metrics.json"
+    try:
+        os.makedirs(os.path.dirname(metrics_file), exist_ok=True)
+        if not os.path.exists(metrics_file):
+            with open(metrics_file, 'w') as f:
+                json.dump([], f)
+            print("Created new data/outputs/realtime_metrics.json file")
+    except Exception as e:
+        print(f"Error initializing metrics file: {e}")
 
 
 def cleanup_processes():
@@ -64,7 +65,7 @@ initialize_metrics_file()
 
 def is_realtime_analyzer_running():
     try:
-        result = subprocess.run("ps aux | grep -v grep | grep realtime_analysis/realtime_analyzer.py",
+        result = subprocess.run("ps aux | grep -v grep | grep src/services/realtime_analyzer.py",
                                 shell=True,
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE)
@@ -148,7 +149,7 @@ def show_metrics_dashboard(data_source="realtime"):
     data = None
 
     if data_source == "realtime":
-        data = load_metrics_data("realtime_metrics.json")
+        data = load_metrics_data("data/outputs/realtime_metrics.json")
 
         if not data:
             st.warning("No realtime metrics data available yet. Start the realtime analyzer to collect data.")
@@ -258,7 +259,7 @@ def show_metrics_dashboard(data_source="realtime"):
                     json.dump(serializable_data, f, cls=DateTimeEncoder)
 
                 result = subprocess.run(
-                    ["python", "main.py", temp_file],
+                    ["python", "scripts/main.py", temp_file],
                     capture_output=True,
                     text=True,
                     check=True
@@ -338,7 +339,7 @@ def show_import_data():
                 if 'invalid_items' in validation_result and validation_result['invalid_items']:
                     with st.expander("View validation errors"):
                         for i, (item, error) in enumerate(validation_result['invalid_items']):
-                            st.write(f"Error in item {i+1}: {error}")
+                            st.write(f"Error in item {i + 1}: {error}")
                             st.json(item)
 
                 if validation_result['valid_count'] > 0:
@@ -354,7 +355,7 @@ def show_import_data():
 
 
 def show_agent_chat():
-    from agent.analyzer_agent import compiled_graph, HumanMessage
+    from src.agents.analyzer_agent import compiled_graph, HumanMessage
 
     st.title("AI Infrastructure Assistant")
 

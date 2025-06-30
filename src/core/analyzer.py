@@ -2,7 +2,7 @@ import json
 from collections import defaultdict
 from typing import List, Dict, Any
 from datetime import datetime
-from models import Metrics
+from .models import Metrics
 
 
 class InfrastructureAnalyzer:

@@ -1,7 +1,7 @@
 import sys
 import time
 import os
-from agent.analyzer_agent import compiled_graph
+from src.agents.analyzer_agent import compiled_graph
 from langchain_core.messages import HumanMessage
 
 
@@ -45,7 +45,7 @@ def main():
 
         while True:
             time.sleep(60)
-            print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] Agent is running. Metrics file exists: {os.path.exists('realtime_metrics.json')}")
+            print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] Agent is running. Metrics file exists: {os.path.exists('data/outputs/realtime_metrics.json')}")
 
 
 if __name__ == "__main__":

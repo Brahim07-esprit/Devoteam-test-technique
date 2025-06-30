@@ -3,7 +3,7 @@ import json
 import sys
 
 
-def clear_metrics_file(filename="realtime_metrics.json"):
+def clear_metrics_file(filename="data/outputs/realtime_metrics.json"):
     """Clear the metrics file by replacing it with an empty array."""
     try:
         with open(filename, 'w') as f:
@@ -19,6 +19,6 @@ if __name__ == "__main__":
     if len(sys.argv) > 1:
         filename = sys.argv[1]
     else:
-        filename = "realtime_metrics.json"
+        filename = "data/outputs/realtime_metrics.json"
 
     clear_metrics_file(filename)

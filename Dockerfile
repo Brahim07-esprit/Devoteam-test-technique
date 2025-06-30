@@ -14,7 +14,6 @@ COPY . .
 
 EXPOSE 8501
 
-# Set environment variables
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONPATH=/app
 

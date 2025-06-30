@@ -4,7 +4,7 @@ import json
 from datetime import datetime
 from openai import OpenAI
 from dotenv import load_dotenv
-from analyzer import InfrastructureAnalyzer
+from src.core.analyzer import InfrastructureAnalyzer
 
 load_dotenv()
 

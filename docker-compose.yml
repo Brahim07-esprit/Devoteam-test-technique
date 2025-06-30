@@ -12,15 +12,15 @@ services:
     entrypoint: >
       bash -c "
       echo 'Forcefully killing any existing realtime analyzer processes...' &&
-      pkill -9 -f 'realtime_analysis/realtime_analyzer.py' || true &&
-      pkill -9 -f 'python -m realtime_analysis.realtime_analyzer' || true &&
+      pkill -9 -f 'src/services/realtime_analyzer.py' || true &&
+      pkill -9 -f 'python -m src.services.realtime_analyzer' || true &&
       sleep 1 &&
       echo 'Creating empty metrics file...' &&
-      mkdir -p /app/data &&
-      echo '[]' > /app/realtime_metrics.json &&
-      chmod 666 /app/realtime_metrics.json &&
+      mkdir -p /app/data/outputs &&
+      echo '[]' > /app/data/outputs/realtime_metrics.json &&
+      chmod 666 /app/data/outputs/realtime_metrics.json &&
       echo 'Starting Streamlit app...' &&
-      streamlit run streamlit/app.py --server.address=0.0.0.0
+      streamlit run src/web/app.py --server.address=0.0.0.0
       "
 
   agent:
@@ -30,19 +30,19 @@ services:
       - ./data:/app/data
     environment:
       - OPENAI_API_KEY=${OPENAI_API_KEY}
-    command: python agent/run_agent.py
+    command: python src/agents/run_agent.py
     entrypoint: >
       bash -c "
       echo 'Forcefully killing any existing realtime analyzer processes...' &&
-      pkill -9 -f 'realtime_analysis/realtime_analyzer.py' || true &&
-      pkill -9 -f 'python -m realtime_analysis.realtime_analyzer' || true &&
+      pkill -9 -f 'src/services/realtime_analyzer.py' || true &&
+      pkill -9 -f 'python -m src.services.realtime_analyzer' || true &&
       sleep 1 &&
       echo 'Creating empty metrics file...' &&
-      mkdir -p /app/data &&
-      echo '[]' > /app/realtime_metrics.json &&
-      chmod 666 /app/realtime_metrics.json &&
+      mkdir -p /app/data/outputs &&
+      echo '[]' > /app/data/outputs/realtime_metrics.json &&
+      chmod 666 /app/data/outputs/realtime_metrics.json &&
       echo 'Starting agent...' &&
-      python agent/run_agent.py
+      python src/agents/run_agent.py
       "
 
   realtime-analyzer:
@@ -52,19 +52,19 @@ services:
       - ./data:/app/data
     environment:
       - OPENAI_API_KEY=${OPENAI_API_KEY}
-    command: python -m realtime_analysis.realtime_analyzer
+    command: python -m src.services.realtime_analyzer
     entrypoint: >
       bash -c "
       echo 'Setting up environment for realtime analyzer...' &&
-      mkdir -p /app/data &&
-      if [ -f /app/realtime_metrics.json ]; then
-        chmod 666 /app/realtime_metrics.json
+      mkdir -p /app/data/outputs &&
+      if [ -f /app/data/outputs/realtime_metrics.json ]; then
+        chmod 666 /app/data/outputs/realtime_metrics.json
       else
-        echo '[]' > /app/realtime_metrics.json &&
-        chmod 666 /app/realtime_metrics.json
+        echo '[]' > /app/data/outputs/realtime_metrics.json &&
+        chmod 666 /app/data/outputs/realtime_metrics.json
       fi &&
       echo 'Starting realtime analyzer...' &&
-      python -m realtime_analysis.realtime_analyzer
+      python -m src.services.realtime_analyzer
       "
 
   main:
@@ -74,11 +74,11 @@ services:
       - ./data:/app/data
     environment:
       - OPENAI_API_KEY=${OPENAI_API_KEY}
-    command: python main.py data/rapport.json
+    command: python scripts/main.py data/raw/rapport.json
     entrypoint: >
       bash -c "
-      mkdir -p /app/data &&
-      python main.py data/rapport.json
+      mkdir -p /app/data/raw &&
+      python scripts/main.py data/raw/rapport.json
       "
 
   analyzer:
@@ -88,11 +88,11 @@ services:
       - ./data:/app/data
     environment:
       - OPENAI_API_KEY=${OPENAI_API_KEY}
-    command: python analyzer.py data/rapport.json
+    command: python -m src.core.analyzer data/raw/rapport.json
     entrypoint: >
       bash -c "
-      mkdir -p /app/data &&
-      python analyzer.py data/rapport.json
+      mkdir -p /app/data/raw &&
+      python -m src.core.analyzer data/raw/rapport.json
       "
 
   analyze-realtime:
@@ -102,9 +102,9 @@ services:
       - ./data:/app/data
     environment:
       - OPENAI_API_KEY=${OPENAI_API_KEY}
-    command: python -m realtime_analysis.analyze_realtime
+    command: python -m src.services.analyze_realtime
     entrypoint: >
       bash -c "
-      mkdir -p /app/data &&
-      python -m realtime_analysis.analyze_realtime
+      mkdir -p /app/data/outputs &&
+      python -m src.services.analyze_realtime
       " 
