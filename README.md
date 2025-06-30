@@ -25,6 +25,8 @@ Recognized the need for continuous monitoring rather than batch processing. Impl
 ### 3. Streamlit Interface + Agent
 Considered users without IDE/Python knowledge and created a web interface using Streamlit. Added an interactive agent with LangGraph architecture for natural language interaction, allowing users to query the system conversationally.
 
+![Image](https://github.com/user-attachments/assets/806794e6-2d82-4666-816a-374886c4f631)
+
 ## Quick Start (Docker)
 
 ```bash
