@@ -1,3 +1,6 @@
+[Watch the demo](demo.mp4)
+
+
 # Infrastructure Monitoring System
 
 This system combines real-time monitoring with AI-powered analysis to detect anomalies and provide actionable recommendations, demonstrating a practical application of AI in DevOps.
