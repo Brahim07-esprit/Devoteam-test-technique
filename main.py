@@ -155,5 +155,3 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
-# Formatted with autopep8
