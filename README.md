@@ -116,20 +116,20 @@ The agent interface supports commands like:
 ```
 project_devoteam/
 ├── src/
-│   ├── core/           # Core analysis logic and data models
-│   ├── agents/         # LangGraph-based agent system
-│   ├── services/       # Real-time monitoring components
-│   ├── web/            # Dashboard interface (Streamlit)
-│   └── utils/          # Utility functions
-├── scripts/            # Pipeline orchestration and utility scripts
+│   ├── core/
+│   ├── agents/
+│   ├── services/
+│   ├── web/
+│   └── utils/
+├── scripts/ 
 ├── data/
-│   ├── raw/            # Raw input data
-│   ├── processed/      # Processed data
-│   └── outputs/        # Generated outputs and logs
-├── docker/             # (optional) Additional Docker configs
-├── docker-compose.yml  # At project root
-├── Dockerfile          # At project root
-├── docs/               # Documentation
+│   ├── raw/         
+│   ├── processed/     
+│   └── outputs/      
+├── docker/             
+├── docker-compose.yml
+├── Dockerfile          
+├── docs/              
 ├── requirements.txt
 ├── .env.example
 └── README.md
